@@ -22,4 +22,6 @@ fn test_set_next() {
     let v2 = Node::new(2);
 
     v1.set_next(v2);
+
+    assert_eq!(v1.next().unwrap().get_value().unwrap(), 2);
 }

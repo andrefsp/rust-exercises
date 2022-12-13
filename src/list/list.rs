@@ -1,9 +1,11 @@
+use std::rc::Rc;
+
 pub fn one() -> u8 {
     1
 }
 
 pub enum Node {
-    Element { content: u8, next: Box<Node> },
+    Element { content: u8, next: Rc<Node> },
     Nil,
 }
 
@@ -11,25 +13,20 @@ impl Node {
     pub fn new(val: u8) -> Node {
         Node::Element {
             content: val,
-            next: Box::new(Node::Nil),
+            next: Rc::new(Node::Nil),
         }
     }
 
-    pub fn next_node(&self) -> Option<Node> {
-        /*
-         *  XXX(andrefsp): we must turn Node into a reference Rc.
-         *
+    pub fn next(&self) -> Option<Rc<Node>> {
         match self {
-            Node::Element { content: _, next } => Some(*next),
+            Node::Element { content: _, next } => Some(next.clone()),
             Node::Nil => None,
         }
-        */
-        None
     }
 
     pub fn set_next(&mut self, n: Node) {
         if let Node::Element { content: _, next } = self {
-            *next = Box::new(n)
+            *next = Rc::new(n)
         };
     }
 
@@ -42,19 +39,19 @@ impl Node {
 }
 
 pub struct List {
-    top: Box<Node>,
+    top: Rc<Node>,
 }
 
 impl List {
     pub fn new() -> List {
         List {
-            top: Box::new(Node::Nil),
+            top: Rc::new(Node::Nil),
         }
     }
 
     pub fn push(&mut self, val: u8) {
         if let Node::Nil = *self.top {
-            self.top = Box::new(Node::new(val));
+            self.top = Rc::new(Node::new(val));
             return;
         }
 
