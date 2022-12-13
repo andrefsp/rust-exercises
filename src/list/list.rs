@@ -1,9 +1,5 @@
 use std::rc::Rc;
 
-pub fn one() -> u8 {
-    1
-}
-
 pub enum Node {
     Element { content: u8, next: Rc<Node> },
     Nil,
@@ -24,9 +20,9 @@ impl Node {
         }
     }
 
-    pub fn set_next(&mut self, n: Node) {
+    pub fn set_next(&mut self, n: Rc<Node>) {
         if let Node::Element { content: _, next } = self {
-            *next = Rc::new(n)
+            *next = n
         };
     }
 
@@ -56,9 +52,41 @@ impl List {
         }
 
         let mut elem = Node::new(val);
+        elem.set_next(self.top.clone());
+        self.top = Rc::new(elem);
+    }
+}
 
-        //elem.set_next(*self.top)
+pub struct ListIterator {
+    current: Rc<Node>,
+}
 
-        //* self.top = elem;
+impl ListIterator {
+    pub fn new(current: Rc<Node>) -> Self {
+        ListIterator { current }
+    }
+}
+
+impl Iterator for ListIterator {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let val = self.current.get_value();
+        if None == val {
+            return None;
+        };
+
+        self.current = self.current.next().unwrap();
+
+        val
+    }
+}
+
+impl IntoIterator for List {
+    type Item = u8;
+    type IntoIter = ListIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ListIterator { current: self.top }
     }
 }
