@@ -1,34 +1,34 @@
 use std::rc::Rc;
 
 pub enum Node {
-    Element { content: u8, next: Rc<Node> },
+    Content { value: u8, next: Rc<Node> },
     Nil,
 }
 
 impl Node {
     pub fn new(val: u8) -> Node {
-        Node::Element {
-            content: val,
+        Node::Content {
+            value: val,
             next: Rc::new(Node::Nil),
         }
     }
 
     pub fn next(&self) -> Option<Rc<Node>> {
         match self {
-            Node::Element { content: _, next } => Some(next.clone()),
+            Node::Content { value: _, next } => Some(next.clone()),
             Node::Nil => None,
         }
     }
 
     pub fn set_next(&mut self, n: Rc<Node>) {
-        if let Node::Element { content: _, next } = self {
+        if let Node::Content { value: _, next } = self {
             *next = n
         };
     }
 
     pub fn get_value(&self) -> Option<u8> {
         match self {
-            Node::Element { content, next: _ } => Some(*content),
+            Node::Content { value, next: _ } => Some(*value),
             Node::Nil => None,
         }
     }
@@ -36,16 +36,24 @@ impl Node {
 
 pub struct List {
     top: Rc<Node>,
+    size: u8,
 }
 
 impl List {
     pub fn new() -> List {
         List {
             top: Rc::new(Node::Nil),
+            size: 0,
         }
     }
 
+    pub fn size(&self) -> u8 {
+        self.size
+    }
+
     pub fn push(&mut self, val: u8) {
+        self.size += 1;
+
         if let Node::Nil = *self.top {
             self.top = Rc::new(Node::new(val));
             return;
@@ -87,6 +95,6 @@ impl IntoIterator for List {
     type IntoIter = ListIterator;
 
     fn into_iter(self) -> Self::IntoIter {
-        ListIterator { current: self.top }
+        ListIterator::new(self.top)
     }
 }
