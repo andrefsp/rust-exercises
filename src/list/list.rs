@@ -1,32 +1,35 @@
 use std::rc::Rc;
 
-pub enum Node {
-    Content { value: u8, next: Rc<Node> },
+pub enum Node<T> {
+    Content { value: T, next: Rc<Node<T>> },
     Nil,
 }
 
-impl Node {
-    pub fn new(val: u8) -> Node {
+impl<T> Node<T>
+where
+    T: Clone + Copy,
+{
+    pub fn new(val: T) -> Node<T> {
         Node::Content {
             value: val,
             next: Rc::new(Node::Nil),
         }
     }
 
-    pub fn next(&self) -> Option<Rc<Node>> {
+    pub fn next(&self) -> Option<Rc<Node<T>>> {
         match self {
             Node::Content { value: _, next } => Some(next.clone()),
             Node::Nil => None,
         }
     }
 
-    pub fn set_next(&mut self, n: Rc<Node>) {
+    pub fn set_next(&mut self, n: Rc<Node<T>>) {
         if let Node::Content { value: _, next } = self {
             *next = n
         };
     }
 
-    pub fn get_value(&self) -> Option<u8> {
+    pub fn get_value(&self) -> Option<T> {
         match self {
             Node::Content { value, next: _ } => Some(*value),
             Node::Nil => None,
@@ -34,13 +37,16 @@ impl Node {
     }
 }
 
-pub struct List {
-    top: Rc<Node>,
+pub struct List<T> {
+    top: Rc<Node<T>>,
     size: u8,
 }
 
-impl List {
-    pub fn new() -> List {
+impl<T> List<T>
+where
+    T: Clone + Copy,
+{
+    pub fn new() -> List<T> {
         List {
             top: Rc::new(Node::Nil),
             size: 0,
@@ -51,7 +57,7 @@ impl List {
         self.size
     }
 
-    pub fn push(&mut self, val: u8) {
+    pub fn push(&mut self, val: T) {
         self.size += 1;
 
         if let Node::Nil = *self.top {
@@ -65,18 +71,21 @@ impl List {
     }
 }
 
-pub struct ListIterator {
-    current: Rc<Node>,
+pub struct ListIterator<T> {
+    current: Rc<Node<T>>,
 }
 
-impl ListIterator {
-    pub fn new(current: Rc<Node>) -> Self {
+impl<T> ListIterator<T> {
+    pub fn new(current: Rc<Node<T>>) -> Self {
         ListIterator { current }
     }
 }
 
-impl Iterator for ListIterator {
-    type Item = u8;
+impl<T> Iterator for ListIterator<T>
+where
+    T: std::cmp::PartialEq + Clone + Copy,
+{
+    type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
         let val = self.current.get_value();
@@ -90,9 +99,12 @@ impl Iterator for ListIterator {
     }
 }
 
-impl IntoIterator for List {
-    type Item = u8;
-    type IntoIter = ListIterator;
+impl<T> IntoIterator for List<T>
+where
+    T: std::cmp::PartialEq + Clone + Copy,
+{
+    type Item = T;
+    type IntoIter = ListIterator<T>;
 
     fn into_iter(self) -> Self::IntoIter {
         ListIterator::new(self.top)

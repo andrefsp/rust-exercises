@@ -3,7 +3,24 @@ use super::list::Node;
 use std::rc::Rc;
 
 #[test]
-fn test_list_push_and_iterate() {
+fn test_list_push_and_iterate_float32() {
+    let mut l = List::new();
+
+    l.push(1.0);
+    l.push(3.0);
+    l.push(2.0);
+
+    assert_eq!(l.size(), 3);
+
+    let mut iter = l.into_iter();
+    assert_eq!(iter.next(), Some(2.0));
+    assert_eq!(iter.next(), Some(3.0));
+    assert_eq!(iter.next(), Some(1.0));
+    assert_eq!(iter.next(), None);
+}
+
+#[test]
+fn test_list_push_and_iterate_u8() {
     let mut l = List::new();
 
     l.push(1);
