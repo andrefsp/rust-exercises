@@ -56,25 +56,97 @@ where
     pub fn size(&self) -> u8 {
         self.size
     }
+}
 
-    pub fn push(&mut self, val: T) {
-        self.size += 1;
+pub trait Methods<T> {
+    fn new() -> Self;
+    fn size(&self) -> u8;
+    fn push(&mut self, val: T);
+    fn pop(&mut self) -> Option<T>;
+}
 
-        if let Node::Nil = *self.top {
-            self.top = Rc::new(Node::new(val));
+// last in - first out list
+pub struct Lifo<T> {
+    l: List<T>,
+}
+
+impl<T> Methods<T> for Lifo<T>
+where
+    T: Clone + Copy,
+{
+    fn new() -> Self {
+        Self { l: List::new() }
+    }
+
+    fn size(&self) -> u8 {
+        self.l.size()
+    }
+
+    fn push(&mut self, val: T) {
+        // append on the beggining
+        self.l.size += 1;
+
+        if let Node::Nil = *self.l.top {
+            self.l.top = Rc::new(Node::new(val));
             return;
         }
 
         let mut elem = Node::new(val);
-        elem.set_next(self.top.clone());
-        self.top = Rc::new(elem);
+        elem.set_next(self.l.top.clone());
+        self.l.top = Rc::new(elem);
     }
 
-    pub fn pop(&mut self) -> Option<T> {
-        let ret = self.top.get_value();
+    fn pop(&mut self) -> Option<T> {
+        let ret = self.l.top.get_value();
 
-        if let Some(next) = self.top.next() {
-            self.top = next;
+        if let Some(next) = self.l.top.next() {
+            self.l.top = next;
+        };
+
+        ret
+    }
+}
+
+// first in - first out list
+pub struct Fifo<T> {
+    l: List<T>,
+}
+
+impl<T> Methods<T> for Fifo<T>
+where
+    T: Clone + Copy,
+{
+    fn new() -> Self {
+        Self { l: List::new() }
+    }
+
+    fn size(&self) -> u8 {
+        self.l.size()
+    }
+
+    fn push(&mut self, val: T) {
+        // append in the end
+        self.l.size += 1;
+
+        let elem = Rc::new(Node::new(val));
+        let mut n = self.l.top.clone();
+
+        loop {
+            match n.next() {
+                Some(node) => n = node,
+                None => {
+                    // Must implement internal mutability on Node
+                    //n.set_next(elem);
+                    return;
+                }
+            }
+        }
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        let ret = self.l.top.get_value();
+        if let Some(next) = self.l.top.next() {
+            self.l.top = next;
         };
 
         ret
@@ -109,7 +181,7 @@ where
     }
 }
 
-impl<T> IntoIterator for List<T>
+impl<T> IntoIterator for Lifo<T>
 where
     T: std::cmp::PartialEq + Clone + Copy,
 {
@@ -117,6 +189,6 @@ where
     type IntoIter = ListIterator<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        ListIterator::new(self.top)
+        ListIterator::new(self.l.top)
     }
 }

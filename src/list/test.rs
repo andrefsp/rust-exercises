@@ -1,10 +1,10 @@
-use super::list::List;
 use super::list::Node;
+use super::list::{Fifo, Lifo, Methods};
 use std::rc::Rc;
 
 #[test]
 fn test_list_push_and_iterate_float32() {
-    let mut l = List::new();
+    let mut l = Lifo::new();
 
     l.push(1.0);
     l.push(3.0);
@@ -21,7 +21,7 @@ fn test_list_push_and_iterate_float32() {
 
 #[test]
 fn test_list_push_and_iterate_u8() {
-    let mut l = List::new();
+    let mut l = Lifo::new();
 
     l.push(1);
     l.push(3);
@@ -38,13 +38,25 @@ fn test_list_push_and_iterate_u8() {
 
 #[test]
 fn test_lifo_push_and_pop() {
-    let mut l = List::new();
+    let mut l = Lifo::new();
 
     l.push(1);
     l.push(3);
 
     assert_eq!(l.pop().unwrap(), 3);
     assert_eq!(l.pop().unwrap(), 1);
+    assert_eq!(l.pop(), None);
+}
+
+#[test]
+fn test_fifo_push_and_pop() {
+    let mut l = Fifo::new();
+
+    l.push(1);
+    l.push(3);
+
+    assert_eq!(l.pop().unwrap(), 1);
+    assert_eq!(l.pop().unwrap(), 3);
     assert_eq!(l.pop(), None);
 }
 
@@ -57,9 +69,8 @@ fn test_node_get_value() {
 #[test]
 fn test_node_set_next() {
     let mut v1 = Node::new(1);
-    let v2 = Node::new(2);
 
-    v1.set_next(Rc::new(v2));
+    v1.set_next(Rc::new(Node::new(2)));
 
     assert_eq!(v1.next().unwrap().get_value().unwrap(), 2);
 }
