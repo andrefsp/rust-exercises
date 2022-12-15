@@ -69,6 +69,16 @@ where
         elem.set_next(self.top.clone());
         self.top = Rc::new(elem);
     }
+
+    pub fn pop(&mut self) -> Option<T> {
+        let ret = self.top.get_value();
+
+        if let Some(next) = self.top.next() {
+            self.top = next;
+        };
+
+        ret
+    }
 }
 
 pub struct ListIterator<T> {

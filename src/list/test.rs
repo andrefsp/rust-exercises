@@ -37,6 +37,18 @@ fn test_list_push_and_iterate_u8() {
 }
 
 #[test]
+fn test_lifo_push_and_pop() {
+    let mut l = List::new();
+
+    l.push(1);
+    l.push(3);
+
+    assert_eq!(l.pop().unwrap(), 3);
+    assert_eq!(l.pop().unwrap(), 1);
+    assert_eq!(l.pop(), None);
+}
+
+#[test]
 fn test_node_get_value() {
     let v1 = Node::new(1);
     assert_eq!(v1.get_value().unwrap(), 1);
