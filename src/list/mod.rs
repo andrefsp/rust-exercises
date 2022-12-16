@@ -4,4 +4,4 @@ pub mod list;
 pub mod test;
 
 // re-export here
-pub use list::{Fifo, Lifo, List};
+//pub use list::{Fifo, Lifo, List};

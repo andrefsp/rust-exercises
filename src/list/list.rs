@@ -1,7 +1,11 @@
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
 pub enum Node<T> {
-    Content { value: T, next: Rc<Node<T>> },
+    Content {
+        value: T,
+        next: RefCell<Rc<Node<T>>>,
+    },
     Nil,
 }
 
@@ -9,23 +13,31 @@ impl<T> Node<T>
 where
     T: Clone + Copy,
 {
-    pub fn new(val: T) -> Node<T> {
-        Node::Content {
+    pub fn new(val: T) -> Rc<Node<T>> {
+        Rc::new(Node::Content {
             value: val,
-            next: Rc::new(Node::Nil),
-        }
+            next: RefCell::new(Rc::new(Node::Nil)),
+        })
     }
 
-    pub fn next(&self) -> Option<Rc<Node<T>>> {
+    pub fn next(&self) -> Option<&RefCell<Rc<Node<T>>>> {
         match self {
-            Node::Content { value: _, next } => Some(next.clone()),
+            Node::Content { value: _, next } => {
+                let node = next.borrow();
+                match node.get_value() {
+                    Some(_) => Some(next),
+                    None => None,
+                }
+            }
             Node::Nil => None,
         }
     }
 
-    pub fn set_next(&mut self, n: Rc<Node<T>>) {
+    // XXX(andrefsp): &self because we are using
+    // internal mutability via RefCell.
+    pub fn set_next(&self, n: Rc<Node<T>>) {
         if let Node::Content { value: _, next } = self {
-            *next = n
+            next.replace(n);
         };
     }
 
@@ -36,6 +48,8 @@ where
         }
     }
 }
+
+/*
 
 pub struct List<T> {
     top: Rc<Node<T>>,
@@ -192,3 +206,4 @@ where
         ListIterator::new(self.l.top)
     }
 }
+*/
