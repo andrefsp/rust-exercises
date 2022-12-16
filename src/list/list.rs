@@ -114,16 +114,10 @@ where
 
         let mut top = self.l.top.borrow_mut();
 
-        match top.next() {
-            Some(next) => {
-                let next = next.borrow().clone();
-                *top = next;
-            }
-            None => {
-                let next = Rc::new(Node::Nil);
-                *top = next;
-            }
-        }
+        *top = match top.next() {
+            Some(next) => next.borrow().clone(),
+            None => Rc::new(Node::Nil),
+        };
 
         ret
     }
