@@ -24,7 +24,7 @@ where
         match self {
             Node::Content { value: _, next } => {
                 let node = next.borrow();
-                match node.get_value() {
+                match node.clone().get_value() {
                     Some(_) => Some(next),
                     None => None,
                 }
@@ -49,10 +49,8 @@ where
     }
 }
 
-/*
-
 pub struct List<T> {
-    top: Rc<Node<T>>,
+    top: RefCell<Rc<Node<T>>>,
     size: u8,
 }
 
@@ -62,7 +60,7 @@ where
 {
     pub fn new() -> List<T> {
         List {
-            top: Rc::new(Node::Nil),
+            top: RefCell::new(Rc::new(Node::Nil)),
             size: 0,
         }
     }
@@ -98,29 +96,40 @@ where
 
     fn push(&mut self, val: T) {
         // append on the beggining
+        match self.l.size {
+            0 => {
+                self.l.top.replace(Node::new(val));
+            }
+            _ => {
+                let elem = Node::new(val);
+                elem.set_next(self.l.top.borrow().clone());
+                self.l.top.replace(elem);
+            }
+        };
         self.l.size += 1;
-
-        if let Node::Nil = *self.l.top {
-            self.l.top = Rc::new(Node::new(val));
-            return;
-        }
-
-        let mut elem = Node::new(val);
-        elem.set_next(self.l.top.clone());
-        self.l.top = Rc::new(elem);
     }
 
     fn pop(&mut self) -> Option<T> {
-        let ret = self.l.top.get_value();
+        let ret = self.l.top.borrow().get_value();
 
-        if let Some(next) = self.l.top.next() {
-            self.l.top = next;
-        };
+        let mut top = self.l.top.borrow_mut();
+
+        match top.next() {
+            Some(next) => {
+                let next = next.borrow().clone();
+                *top = next;
+            }
+            None => {
+                let next = Rc::new(Node::Nil);
+                *top = next;
+            }
+        }
 
         ret
     }
 }
 
+/*
 // first in - first out list
 pub struct Fifo<T> {
     l: List<T>,
