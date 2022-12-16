@@ -86,7 +86,6 @@ fn test_lifo_push_and_pop() {
     assert_eq!(l.pop(), None);
 }
 
-/*
 #[test]
 fn test_list_push_and_iterate_float32() {
     let mut l = Lifo::new();
@@ -121,7 +120,7 @@ fn test_list_push_and_iterate_u8() {
     assert_eq!(iter.next(), None);
 }
 
-
+/*
 #[test]
 fn test_fifo_push_and_pop() {
     let mut l = Fifo::new();

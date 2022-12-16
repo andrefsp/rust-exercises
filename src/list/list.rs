@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
@@ -169,7 +170,7 @@ where
         ret
     }
 }
-
+*/
 pub struct ListIterator<T> {
     current: Rc<Node<T>>,
 }
@@ -192,7 +193,10 @@ where
             return None;
         };
 
-        self.current = self.current.next().unwrap();
+        self.current = match self.current.next() {
+            Some(next) => next.borrow().clone(),
+            None => Rc::new(Node::Nil),
+        };
 
         val
     }
@@ -206,7 +210,6 @@ where
     type IntoIter = ListIterator<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        ListIterator::new(self.l.top)
+        ListIterator::new(self.l.top.borrow().clone())
     }
 }
-*/
