@@ -1,8 +1,6 @@
-use std::rc::Rc;
-
-use super::list::Lifo;
 use super::list::Methods;
 use super::list::Node;
+use super::list::{Fifo, Lifo};
 
 #[test]
 fn test_node_get_value() {
@@ -120,16 +118,16 @@ fn test_list_push_and_iterate_u8() {
     assert_eq!(iter.next(), None);
 }
 
-/*
 #[test]
 fn test_fifo_push_and_pop() {
     let mut l = Fifo::new();
 
     l.push(1);
     l.push(3);
+    l.push(2);
 
     assert_eq!(l.pop().unwrap(), 1);
     assert_eq!(l.pop().unwrap(), 3);
+    assert_eq!(l.pop().unwrap(), 2);
     assert_eq!(l.pop(), None);
 }
-*/

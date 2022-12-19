@@ -1,5 +1,4 @@
-use std::borrow::Borrow;
-use std::cell::{Ref, RefCell, RefMut};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 pub enum Node<T> {
@@ -111,6 +110,7 @@ where
     }
 
     fn pop(&mut self) -> Option<T> {
+        // pop from the beggining
         let ret = self.l.top.borrow().get_value();
 
         let mut top = self.l.top.borrow_mut();
@@ -124,7 +124,6 @@ where
     }
 }
 
-/*
 // first in - first out list
 pub struct Fifo<T> {
     l: List<T>,
@@ -146,31 +145,39 @@ where
         // append in the end
         self.l.size += 1;
 
-        let elem = Rc::new(Node::new(val));
-        let mut n = self.l.top.clone();
+        let top_val = self.l.top.borrow().get_value();
+        if let None = top_val {
+            self.l.top.replace(Node::new(val));
+            return;
+        };
 
+        let mut n = self.l.top.borrow_mut().clone();
         loop {
-            match n.next() {
-                Some(node) => n = node,
-                None => {
-                    // Must implement internal mutability on Node
-                    //n.set_next(elem);
-                    return;
-                }
-            }
+            if n.next().is_none() {
+                n.set_next(Node::new(val));
+                break;
+            };
+            let nn = n.next().unwrap().borrow().clone();
+            n = nn;
         }
     }
 
     fn pop(&mut self) -> Option<T> {
-        let ret = self.l.top.get_value();
-        if let Some(next) = self.l.top.next() {
-            self.l.top = next;
+        // pop from the beggining
+
+        let ret = self.l.top.borrow().get_value();
+
+        let mut top = self.l.top.borrow_mut();
+
+        *top = match top.next() {
+            Some(next) => next.borrow().clone(),
+            None => Rc::new(Node::Nil),
         };
 
         ret
     }
 }
-*/
+
 pub struct ListIterator<T> {
     current: Rc<Node<T>>,
 }
