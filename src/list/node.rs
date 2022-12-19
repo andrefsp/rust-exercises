@@ -30,7 +30,7 @@ where
         match self {
             Node::Content { value: _, next } => {
                 let node = next.borrow();
-                match node.clone().get_value() {
+                match node.get_value() {
                     Some(_) => Some(next),
                     None => None,
                 }
