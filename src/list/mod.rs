@@ -1,7 +1,11 @@
 pub mod list;
+pub mod node;
+
+// re-export Node here
+pub use node::Node;
 
 #[cfg(test)]
-pub mod test;
+pub mod list_test;
 
-// re-export here
-//pub use list::{Fifo, Lifo, List};
+#[cfg(test)]
+pub mod node_test;

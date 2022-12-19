@@ -1,52 +1,13 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub enum Node<T> {
-    Content {
-        value: T,
-        next: RefCell<Rc<Node<T>>>,
-    },
-    Nil,
-}
+use super::Node;
 
-impl<T> Node<T>
-where
-    T: Clone + Copy,
-{
-    pub fn new(val: T) -> Rc<Node<T>> {
-        Rc::new(Node::Content {
-            value: val,
-            next: RefCell::new(Rc::new(Node::Nil)),
-        })
-    }
-
-    pub fn next(&self) -> Option<&RefCell<Rc<Node<T>>>> {
-        match self {
-            Node::Content { value: _, next } => {
-                let node = next.borrow();
-                match node.clone().get_value() {
-                    Some(_) => Some(next),
-                    None => None,
-                }
-            }
-            Node::Nil => None,
-        }
-    }
-
-    // XXX(andrefsp): &self because we are using
-    // internal mutability via RefCell.
-    pub fn set_next(&self, n: Rc<Node<T>>) {
-        if let Node::Content { value: _, next } = self {
-            next.replace(n);
-        };
-    }
-
-    pub fn get_value(&self) -> Option<T> {
-        match self {
-            Node::Content { value, next: _ } => Some(*value),
-            Node::Nil => None,
-        }
-    }
+pub trait Methods<T> {
+    fn new() -> Self;
+    fn size(&self) -> u8;
+    fn push(&mut self, val: T);
+    fn pop(&mut self) -> Option<T>;
 }
 
 pub struct List<T> {
@@ -60,7 +21,7 @@ where
 {
     pub fn new() -> List<T> {
         List {
-            top: RefCell::new(Rc::new(Node::Nil)),
+            top: RefCell::new(Node::nil()),
             size: 0,
         }
     }
@@ -68,13 +29,6 @@ where
     pub fn size(&self) -> u8 {
         self.size
     }
-}
-
-pub trait Methods<T> {
-    fn new() -> Self;
-    fn size(&self) -> u8;
-    fn push(&mut self, val: T);
-    fn pop(&mut self) -> Option<T>;
 }
 
 // last in - first out list
@@ -117,7 +71,7 @@ where
 
         *top = match top.next() {
             Some(next) => next.borrow().clone(),
-            None => Rc::new(Node::Nil),
+            None => Node::nil(),
         };
 
         ret
@@ -171,7 +125,7 @@ where
 
         *top = match top.next() {
             Some(next) => next.borrow().clone(),
-            None => Rc::new(Node::Nil),
+            None => Node::nil(),
         };
 
         ret
@@ -202,7 +156,7 @@ where
 
         self.current = match self.current.next() {
             Some(next) => next.borrow().clone(),
-            None => Rc::new(Node::Nil),
+            None => Node::nil(),
         };
 
         val
