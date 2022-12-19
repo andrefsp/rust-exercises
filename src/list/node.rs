@@ -1,5 +1,8 @@
 use std::cell::RefCell;
+use std::fmt::Display;
 use std::rc::Rc;
+
+use std::fmt::Formatter;
 
 #[derive(Default)]
 pub enum Node<T> {
@@ -9,6 +12,20 @@ pub enum Node<T> {
         value: T,
         next: RefCell<Rc<Node<T>>>,
     },
+}
+
+impl<T> Display for Node<T>
+where
+    T: Display,
+{
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Node::Nil => fmt.write_str("<NIL>"),
+            Node::Content { value, next } => {
+                fmt.write_fmt(format_args!("[ {} |-> {} ]", value, next.borrow()))
+            }
+        }
+    }
 }
 
 impl<T> Node<T>
