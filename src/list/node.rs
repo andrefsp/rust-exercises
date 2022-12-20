@@ -4,9 +4,7 @@ use std::rc::Rc;
 
 use std::fmt::Formatter;
 
-#[derive(Default)]
 pub enum Node<T> {
-    #[default]
     Nil,
     Content {
         value: T,
@@ -22,7 +20,7 @@ where
         match self {
             Node::Nil => fmt.write_str("<NIL>"),
             Node::Content { value, next } => {
-                fmt.write_fmt(format_args!("[ {} |-> {} ]", value, next.borrow()))
+                fmt.write_fmt(format_args!("[ {} |-> {}]", value, next.borrow()))
             }
         }
     }
@@ -40,7 +38,7 @@ where
     }
 
     pub fn nil() -> Rc<Node<T>> {
-        Rc::new(Node::default())
+        Rc::new(Node::Nil)
     }
 
     pub fn next(&self) -> Option<&RefCell<Rc<Node<T>>>> {

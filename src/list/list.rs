@@ -3,11 +3,14 @@ use std::rc::Rc;
 
 use super::Node;
 
-pub trait Methods<T> {
-    fn new() -> Self;
+pub trait Methods<T>
+where
+    T: Clone + Copy,
+{
     fn size(&self) -> u8;
     fn push(&mut self, val: T);
     fn pop(&mut self) -> Option<T>;
+    fn head(&self) -> Rc<Node<T>>;
 }
 
 pub struct List<T> {
@@ -36,16 +39,25 @@ pub struct Lifo<T> {
     l: List<T>,
 }
 
+impl<T> Lifo<T>
+where
+    T: Clone + Copy,
+{
+    pub fn new() -> Self {
+        Self { l: List::new() }
+    }
+}
+
 impl<T> Methods<T> for Lifo<T>
 where
     T: Clone + Copy,
 {
-    fn new() -> Self {
-        Self { l: List::new() }
-    }
-
     fn size(&self) -> u8 {
         self.l.size()
+    }
+
+    fn head(&self) -> Rc<Node<T>> {
+        self.l.top.borrow().clone()
     }
 
     fn push(&mut self, val: T) {
@@ -83,16 +95,24 @@ pub struct Fifo<T> {
     l: List<T>,
 }
 
+impl<T> Fifo<T>
+where
+    T: Clone + Copy,
+{
+    pub fn new() -> Self {
+        Self { l: List::new() }
+    }
+}
+
 impl<T> Methods<T> for Fifo<T>
 where
     T: Clone + Copy,
 {
-    fn new() -> Self {
-        Self { l: List::new() }
-    }
-
     fn size(&self) -> u8 {
         self.l.size()
+    }
+    fn head(&self) -> Rc<Node<T>> {
+        self.l.top.borrow().clone()
     }
 
     fn push(&mut self, val: T) {
