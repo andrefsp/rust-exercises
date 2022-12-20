@@ -1,10 +1,12 @@
-use super::Node;
 use std::cell::RefCell;
+use std::fmt::Display;
 use std::rc::Rc;
+
+use super::Node;
 
 pub trait Methods<T>
 where
-    T: Clone + Copy,
+    T: Display + Clone + Copy,
 {
     fn size(&self) -> u8;
     fn push(&mut self, val: T);
@@ -49,7 +51,7 @@ where
 
 impl<T> Methods<T> for Lifo<T>
 where
-    T: Clone + Copy,
+    T: Display + Clone + Copy,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -106,7 +108,7 @@ where
 
 impl<T> Methods<T> for Fifo<T>
 where
-    T: Clone + Copy,
+    T: Display + Clone + Copy,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -151,6 +153,58 @@ where
     }
 }
 
+pub struct Ordered<T> {
+    l: List<T>,
+}
+
+impl<T> Ordered<T>
+where
+    T: Clone + Copy,
+{
+    pub fn new() -> Self {
+        Self { l: List::new() }
+    }
+}
+
+impl<T> Methods<T> for Ordered<T>
+where
+    T: Display + Clone + Copy + PartialOrd,
+{
+    fn size(&self) -> u8 {
+        self.l.size()
+    }
+
+    fn head(&self) -> Rc<Node<T>> {
+        self.l.top.borrow().clone()
+    }
+
+    fn push(&mut self, val: T) {
+        if let Node::Nil = *self.head() {
+            self.l.top.replace(Node::new(val));
+            return;
+        }
+
+        let cmp = Node::new(val);
+
+        let mut cr = &self.l.top;
+        let mut current = self.l.top.borrow_mut().clone();
+
+        loop {
+            if current.next().is_none() {
+                current.set_next(cmp);
+                break;
+            };
+            // TODO(andrefsp):: proceed here
+            let k = current.next().unwrap().borrow().clone();
+            current = k;
+        }
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        None
+    }
+}
+
 pub struct ListIterator<T> {
     current: Rc<Node<T>>,
 }
@@ -169,9 +223,6 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         let val = self.current.get_value();
-        if None == val {
-            return None;
-        };
 
         self.current = match self.current.next() {
             Some(next) => next.borrow().clone(),

@@ -1,5 +1,5 @@
 use super::list::Methods;
-use super::list::{Fifo, Lifo};
+use super::list::{Fifo, Lifo, Ordered};
 
 #[test]
 fn test_lifo_push_and_size() {
@@ -66,8 +66,24 @@ fn test_fifo_push_and_pop() {
     l.push(3);
     l.push(2);
 
-    assert_eq!(l.pop().unwrap(), 1);
-    assert_eq!(l.pop().unwrap(), 3);
-    assert_eq!(l.pop().unwrap(), 2);
+    assert_eq!(l.pop(), Some(1));
+    assert_eq!(l.pop(), Some(3));
+    assert_eq!(l.pop(), Some(2));
+    assert_eq!(l.pop(), None);
+}
+
+#[test]
+fn test_ordered_push_and_pop() {
+    let mut l = Ordered::new();
+
+    l.push(1);
+    l.push(4);
+    l.push(3);
+    l.push(2);
+
+    assert_eq!(l.pop(), Some(1));
+    assert_eq!(l.pop(), Some(2));
+    assert_eq!(l.pop(), Some(3));
+    assert_eq!(l.pop(), Some(4));
     assert_eq!(l.pop(), None);
 }

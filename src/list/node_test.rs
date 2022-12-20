@@ -61,6 +61,8 @@ fn test_node_get_next_and_set_next_with_list() {
 
 #[test]
 fn test_node_cmp() {
+    let nil = Node::default();
+
     let v1 = Node::new(1);
     let v2 = Node::new(2);
 
@@ -69,4 +71,6 @@ fn test_node_cmp() {
     assert!(v2 > v1);
     assert_ne!(v1, v2);
     assert_eq!(v2, v2_eq);
+
+    assert!(v2 > nil.into());
 }
