@@ -186,7 +186,7 @@ where
 
         let cmp = Node::new(val);
 
-        let mut cr = &self.l.top;
+        let mut current_ref = &self.l.top;
         let mut current = self.l.top.borrow_mut().clone();
 
         loop {
@@ -194,7 +194,11 @@ where
                 current.set_next(cmp);
                 break;
             };
+
             // TODO(andrefsp):: proceed here
+            //current_ref = current.next().unwrap();
+            //current_ref.replace(...);
+
             let k = current.next().unwrap().borrow().clone();
             current = k;
         }
