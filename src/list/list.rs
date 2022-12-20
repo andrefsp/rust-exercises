@@ -1,7 +1,6 @@
+use super::Node;
 use std::cell::RefCell;
 use std::rc::Rc;
-
-use super::Node;
 
 pub trait Methods<T>
 where
@@ -62,8 +61,10 @@ where
 
     fn push(&mut self, val: T) {
         // append on the beggining
-        match self.l.size {
-            0 => {
+        self.l.size += 1;
+
+        match *self.head() {
+            Node::Nil => {
                 self.l.top.replace(Node::new(val));
             }
             _ => {
@@ -71,8 +72,7 @@ where
                 elem.set_next(self.l.top.borrow().clone());
                 self.l.top.replace(elem);
             }
-        };
-        self.l.size += 1;
+        }
     }
 
     fn pop(&mut self) -> Option<T> {
@@ -119,8 +119,7 @@ where
         // append in the end
         self.l.size += 1;
 
-        let top_val = self.l.top.borrow().get_value();
-        if let None = top_val {
+        if let Node::Nil = *self.head() {
             self.l.top.replace(Node::new(val));
             return;
         };
