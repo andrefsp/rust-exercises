@@ -1,10 +1,11 @@
 use std::cell::RefCell;
 use std::fmt::Display;
+use std::fmt::Formatter;
 use std::rc::Rc;
 
-use std::fmt::Formatter;
-
+#[derive(Debug, Default, PartialEq, PartialOrd)]
 pub enum Node<T> {
+    #[default]
     Nil,
     Content {
         value: T,
@@ -38,7 +39,7 @@ where
     }
 
     pub fn nil() -> Rc<Node<T>> {
-        Rc::new(Node::Nil)
+        Rc::new(Node::default())
     }
 
     pub fn next(&self) -> Option<&RefCell<Rc<Node<T>>>> {
