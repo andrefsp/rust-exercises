@@ -197,9 +197,9 @@ where
         loop {
             match current.next() {
                 Some(next) => {
-                    if new > current && new <= next.borrow().clone() {
-                        let tail = next.borrow().clone();
-                        new.set_next(tail);
+                    let next = next.borrow().clone();
+                    if new > current && new <= next {
+                        new.set_next(next);
                         current.set_next(new.clone());
                         return;
                     };
