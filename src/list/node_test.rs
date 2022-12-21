@@ -74,3 +74,29 @@ fn test_node_cmp() {
 
     assert!(v2 > nil.into());
 }
+
+#[test]
+fn test_node_reshuffle() {
+    // 1 -> 5 -> 10
+    let v1 = Node::new(1);
+    let v5 = Node::new(5);
+    let v10 = Node::new(10);
+
+    v1.set_next(v5.clone());
+    v5.set_next(v10.clone());
+
+    // 1 -> 5 -> 7 -> 10
+    let v7 = Node::new(7);
+
+    v7.set_next(v10.clone());
+    v5.set_next(v7);
+
+    let v5 = v1.next().unwrap().borrow();
+    assert_eq!(v5.get_value(), Some(5));
+
+    let v7 = v5.next().unwrap().borrow();
+    assert_eq!(v7.get_value(), Some(7));
+
+    let v10 = v7.next().unwrap().borrow();
+    assert_eq!(v10.get_value(), Some(10));
+}

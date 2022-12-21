@@ -179,33 +179,50 @@ where
     }
 
     fn push(&mut self, val: T) {
+        let new = Node::new(val);
+
         if let Node::Nil = *self.head() {
             self.l.top.replace(Node::new(val));
             return;
         }
 
-        let cmp = Node::new(val);
-
         let mut current_ref = &self.l.top;
-        let mut current = self.l.top.borrow_mut().clone();
+        let mut current = self.l.top.borrow().clone();
 
         loop {
-            if current.next().is_none() {
-                current.set_next(cmp);
+            let tail = current.next();
+
+            if new > current {
+                // perform the switch here
+                if tail.is_some() {
+                    let tail = tail.unwrap().borrow().clone();
+                    new.set_next(tail);
+                }
+                current.set_next(new);
                 break;
             };
-
-            // TODO(andrefsp):: proceed here
-            //current_ref = current.next().unwrap();
-            //current_ref.replace(...);
-
-            let k = current.next().unwrap().borrow().clone();
+            if tail.is_none() {
+                new.set_next(current.clone());
+                current_ref.replace(new);
+                break;
+            };
+            let tail = tail.unwrap();
+            let k = tail.borrow().clone();
             current = k;
         }
     }
 
     fn pop(&mut self) -> Option<T> {
-        None
+        let ret = self.l.top.borrow().get_value();
+
+        let mut top = self.l.top.borrow_mut();
+
+        *top = match top.next() {
+            Some(next) => next.borrow().clone(),
+            None => Node::nil(),
+        };
+
+        ret
     }
 }
 
