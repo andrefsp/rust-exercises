@@ -186,29 +186,33 @@ where
             return;
         }
 
-        let mut current_ref = &self.l.top;
-        let mut current = self.l.top.borrow().clone();
+        if new <= self.head() {
+            new.set_next(self.head());
+            self.l.top.replace(new);
+            return;
+        };
+
+        let mut current = self.head();
 
         loop {
-            let tail = current.next();
-
-            if new > current {
-                // perform the switch here
-                if tail.is_some() {
-                    let tail = tail.unwrap().borrow().clone();
-                    new.set_next(tail);
+            match current.next() {
+                Some(next) => {
+                    if new > current && new <= next.borrow().clone() {
+                        let tail = next.borrow().clone();
+                        new.set_next(tail);
+                        current.set_next(new.clone());
+                        return;
+                    };
                 }
-                current.set_next(new);
-                break;
-            };
-            if tail.is_none() {
-                new.set_next(current.clone());
-                current_ref.replace(new);
-                break;
-            };
-            let tail = tail.unwrap();
-            let k = tail.borrow().clone();
-            current = k;
+                None => {
+                    current.set_next(new.clone());
+                    return;
+                }
+            }
+
+            let tail = current.next().unwrap();
+            let next = tail.borrow().clone();
+            current = next;
         }
     }
 
