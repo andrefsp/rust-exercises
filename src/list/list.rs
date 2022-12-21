@@ -180,24 +180,23 @@ where
 
     fn push(&mut self, val: T) {
         let new = Node::new(val);
+        let mut current = self.head();
 
-        if let Node::Nil = *self.head() {
+        if let Node::Nil = *current {
             self.l.top.replace(Node::new(val));
             return;
         }
 
-        if new <= self.head() {
+        if new <= current {
             new.set_next(self.head());
             self.l.top.replace(new);
             return;
         };
 
-        let mut current = self.head();
-
         loop {
             match current.next() {
-                Some(next) => {
-                    let next = next.borrow().clone();
+                Some(next_ref) => {
+                    let next = next_ref.borrow().clone();
                     if new > current && new <= next {
                         new.set_next(next);
                         current.set_next(new.clone());
