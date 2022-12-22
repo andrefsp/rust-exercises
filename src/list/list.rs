@@ -190,15 +190,13 @@ where
                         current.set_next(new.clone());
                         return;
                     };
+                    current = next;
                 }
                 None => {
                     current.set_next(new.clone());
                     return;
                 }
             }
-            let tail = current.next().unwrap();
-            let next = tail.borrow().clone();
-            current = next;
         }
     }
 }
