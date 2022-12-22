@@ -1,7 +1,8 @@
 pub mod list;
 pub mod node;
 
-// re-export Node here
+// re-export List here
+pub use list::{List, Methods};
 pub use node::Node;
 
 #[cfg(test)]

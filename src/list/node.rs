@@ -19,9 +19,9 @@ where
 {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
         match self {
-            Node::Nil => fmt.write_str("<NIL>"),
+            Node::Nil => fmt.write_str("nil"),
             Node::Content { value, next } => {
-                fmt.write_fmt(format_args!("[ {} |-> {}]", value, next.borrow()))
+                fmt.write_fmt(format_args!("[ {} -> {}]", value, next.borrow()))
             }
         }
     }

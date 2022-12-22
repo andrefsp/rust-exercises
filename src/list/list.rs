@@ -9,8 +9,8 @@ where
     T: Display + Clone + Copy,
 {
     fn size(&self) -> u8;
-    fn push(&mut self, val: T);
-    fn pop(&mut self) -> Option<T>;
+    fn push(&self, val: T);
+    fn pop(&self) -> Option<T>;
     fn head(&self) -> Rc<Node<T>>;
 }
 
@@ -88,12 +88,12 @@ where
         self.l.head()
     }
 
-    fn pop(&mut self) -> Option<T> {
+    fn pop(&self) -> Option<T> {
         // pop from the beggining
         self.l.pop()
     }
 
-    fn push(&mut self, val: T) {
+    fn push(&self, val: T) {
         // append on the beggining
         let head = self.head();
         self.l.first.replace(match *head {
@@ -124,12 +124,12 @@ where
         self.l.head()
     }
 
-    fn pop(&mut self) -> Option<T> {
+    fn pop(&self) -> Option<T> {
         // pop from the beggining
         self.l.pop()
     }
 
-    fn push(&mut self, val: T) {
+    fn push(&self, val: T) {
         // append in the end
         if let Node::Nil = *self.head() {
             self.l.first.replace(Node::new(val));
@@ -164,11 +164,11 @@ where
         self.l.head()
     }
 
-    fn pop(&mut self) -> Option<T> {
+    fn pop(&self) -> Option<T> {
         self.l.pop()
     }
 
-    fn push(&mut self, val: T) {
+    fn push(&self, val: T) {
         let new = Node::new(val);
         let mut current = self.head();
 
