@@ -15,38 +15,65 @@ where
 }
 
 pub struct List<T> {
-    top: RefCell<Rc<Node<T>>>,
-    size: u8,
+    first: RefCell<Rc<Node<T>>>,
 }
 
 impl<T> List<T>
 where
     T: Clone + Copy,
 {
-    pub fn new() -> List<T> {
+    fn new() -> List<T> {
         List {
-            top: RefCell::new(Node::nil()),
-            size: 0,
+            first: RefCell::new(Node::nil()),
         }
     }
 
+    pub fn lifo() -> Lifo<T> {
+        Lifo { l: List::new() }
+    }
+
+    pub fn fifo() -> Fifo<T> {
+        Fifo { l: List::new() }
+    }
+
+    pub fn ordered() -> Ordered<T> {
+        Ordered { l: List::new() }
+    }
+
     pub fn size(&self) -> u8 {
-        self.size
+        let mut count = 0;
+        let mut current = self.head();
+        loop {
+            if let Node::Nil = *current {
+                return count;
+            };
+            count += 1;
+
+            current = match current.next() {
+                Some(next) => next.borrow().clone(),
+                None => Node::nil(),
+            };
+        }
+    }
+
+    pub fn head(&self) -> Rc<Node<T>> {
+        self.first.borrow().clone()
+    }
+
+    pub fn pop(&self) -> Option<T> {
+        // pop from the beggining
+        self.first
+            .replace(match self.head().next() {
+                Some(next) => next.borrow().clone(),
+                None => Node::nil(),
+            })
+            .get_value()
     }
 }
 
 // last in - first out list
 pub struct Lifo<T> {
     l: List<T>,
-}
-
-impl<T> Lifo<T>
-where
-    T: Clone + Copy,
-{
-    pub fn new() -> Self {
-        Self { l: List::new() }
-    }
 }
 
 impl<T> Methods<T> for Lifo<T>
@@ -58,52 +85,31 @@ where
     }
 
     fn head(&self) -> Rc<Node<T>> {
-        self.l.top.borrow().clone()
-    }
-
-    fn push(&mut self, val: T) {
-        // append on the beggining
-        self.l.size += 1;
-
-        match *self.head() {
-            Node::Nil => {
-                self.l.top.replace(Node::new(val));
-            }
-            _ => {
-                let elem = Node::new(val);
-                elem.set_next(self.l.top.borrow().clone());
-                self.l.top.replace(elem);
-            }
-        }
+        self.l.head()
     }
 
     fn pop(&mut self) -> Option<T> {
         // pop from the beggining
-        let ret = self.l.top.borrow().get_value();
+        self.l.pop()
+    }
 
-        let mut top = self.l.top.borrow_mut();
-
-        *top = match top.next() {
-            Some(next) => next.borrow().clone(),
-            None => Node::nil(),
-        };
-
-        ret
+    fn push(&mut self, val: T) {
+        // append on the beggining
+        let head = self.head();
+        self.l.first.replace(match *head {
+            Node::Nil => Node::new(val),
+            _ => {
+                let elem = Node::new(val);
+                elem.set_next(head);
+                elem
+            }
+        });
     }
 }
 
 // first in - first out list
 pub struct Fifo<T> {
     l: List<T>,
-}
-
-impl<T> Fifo<T>
-where
-    T: Clone + Copy,
-{
-    pub fn new() -> Self {
-        Self { l: List::new() }
-    }
 }
 
 impl<T> Methods<T> for Fifo<T>
@@ -113,20 +119,24 @@ where
     fn size(&self) -> u8 {
         self.l.size()
     }
+
     fn head(&self) -> Rc<Node<T>> {
-        self.l.top.borrow().clone()
+        self.l.head()
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        // pop from the beggining
+        self.l.pop()
     }
 
     fn push(&mut self, val: T) {
         // append in the end
-        self.l.size += 1;
-
         if let Node::Nil = *self.head() {
-            self.l.top.replace(Node::new(val));
+            self.l.first.replace(Node::new(val));
             return;
         };
 
-        let mut n = self.l.top.borrow_mut().clone();
+        let mut n = self.l.first.borrow_mut().clone();
         loop {
             if n.next().is_none() {
                 n.set_next(Node::new(val));
@@ -136,34 +146,10 @@ where
             n = nn;
         }
     }
-
-    fn pop(&mut self) -> Option<T> {
-        // pop from the beggining
-
-        let ret = self.l.top.borrow().get_value();
-
-        let mut top = self.l.top.borrow_mut();
-
-        *top = match top.next() {
-            Some(next) => next.borrow().clone(),
-            None => Node::nil(),
-        };
-
-        ret
-    }
 }
 
 pub struct Ordered<T> {
     l: List<T>,
-}
-
-impl<T> Ordered<T>
-where
-    T: Clone + Copy,
-{
-    pub fn new() -> Self {
-        Self { l: List::new() }
-    }
 }
 
 impl<T> Methods<T> for Ordered<T>
@@ -175,7 +161,11 @@ where
     }
 
     fn head(&self) -> Rc<Node<T>> {
-        self.l.top.borrow().clone()
+        self.l.head()
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        self.l.pop()
     }
 
     fn push(&mut self, val: T) {
@@ -183,13 +173,11 @@ where
         let mut current = self.head();
 
         if let Node::Nil = *current {
-            self.l.top.replace(Node::new(val));
+            self.l.first.replace(new);
             return;
-        }
-
-        if new <= current {
+        } else if new <= current {
             new.set_next(self.head());
-            self.l.top.replace(new);
+            self.l.first.replace(new);
             return;
         };
 
@@ -208,24 +196,10 @@ where
                     return;
                 }
             }
-
             let tail = current.next().unwrap();
             let next = tail.borrow().clone();
             current = next;
         }
-    }
-
-    fn pop(&mut self) -> Option<T> {
-        let ret = self.l.top.borrow().get_value();
-
-        let mut top = self.l.top.borrow_mut();
-
-        *top = match top.next() {
-            Some(next) => next.borrow().clone(),
-            None => Node::nil(),
-        };
-
-        ret
     }
 }
 
@@ -265,6 +239,6 @@ where
     type IntoIter = ListIterator<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        ListIterator::new(self.l.top.borrow().clone())
+        ListIterator::new(self.l.first.borrow().clone())
     }
 }

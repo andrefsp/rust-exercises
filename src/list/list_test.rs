@@ -1,20 +1,30 @@
+use super::list::List;
 use super::list::Methods;
-use super::list::{Fifo, Lifo, Ordered};
 
 #[test]
 fn test_lifo_push_and_size() {
-    let mut l = Lifo::new();
+    let mut l = List::lifo();
 
     l.push(1.0);
     l.push(3.0);
     l.push(2.0);
 
     assert_eq!(l.size(), 3);
+
+    l.pop();
+    assert_eq!(l.size(), 2);
+    l.pop();
+    l.pop();
+    assert_eq!(l.size(), 0);
+
+    // pop once more to check for possible errors
+    l.pop();
+    assert_eq!(l.size(), 0);
 }
 
 #[test]
 fn test_lifo_push_and_pop() {
-    let mut l = Lifo::new();
+    let mut l = List::lifo();
 
     l.push(1);
     l.push(3);
@@ -26,7 +36,7 @@ fn test_lifo_push_and_pop() {
 
 #[test]
 fn test_list_push_and_iterate_float32() {
-    let mut l = Lifo::new();
+    let mut l = List::lifo();
 
     l.push(1.0);
     l.push(3.0);
@@ -43,7 +53,7 @@ fn test_list_push_and_iterate_float32() {
 
 #[test]
 fn test_list_push_and_iterate_u8() {
-    let mut l = Lifo::new();
+    let mut l = List::lifo();
 
     l.push(1);
     l.push(3);
@@ -60,7 +70,7 @@ fn test_list_push_and_iterate_u8() {
 
 #[test]
 fn test_fifo_push_and_pop() {
-    let mut l = Fifo::new();
+    let mut l = List::fifo();
 
     l.push(1);
     l.push(3);
@@ -74,14 +84,12 @@ fn test_fifo_push_and_pop() {
 
 #[test]
 fn test_ordered_push_and_pop() {
-    let mut l = Ordered::new();
+    let mut l = List::ordered();
 
     l.push(3);
     l.push(1);
     l.push(4);
     l.push(2);
-
-    println!("{}", l.head());
 
     assert_eq!(l.pop(), Some(1));
     assert_eq!(l.pop(), Some(2));
