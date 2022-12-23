@@ -2,6 +2,36 @@ use super::list::List;
 use super::list::Methods;
 
 #[test]
+fn test_lifo_push_remove_and_contains() {
+    let l = List::fifo();
+
+    l.push(1);
+    l.push(3);
+    l.push(4);
+    l.push(2);
+
+    assert!(l.contains(3));
+    assert!(l.remove(3));
+
+    assert!(!l.contains(3));
+    assert!(!l.remove(3));
+}
+
+#[test]
+fn test_lifo_push_and_contains() {
+    let l = List::lifo();
+
+    l.push(1);
+    l.push(3);
+    l.push(2);
+
+    assert!(l.contains(3));
+    assert!(l.contains(1));
+    assert!(l.contains(2));
+    assert!(!l.contains(10));
+}
+
+#[test]
 fn test_lifo_push_and_size() {
     let l = List::lifo();
 

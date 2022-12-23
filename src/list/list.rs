@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::rc::Rc;
@@ -8,10 +9,12 @@ pub trait Methods<T>
 where
     T: Clone + Copy + Default,
 {
+    fn head(&self) -> Rc<Node<T>>;
     fn size(&self) -> u8;
     fn push(&self, val: T);
     fn pop(&self) -> Option<T>;
-    fn head(&self) -> Rc<Node<T>>;
+    fn remove(&self, val: T) -> bool;
+    fn contains(&self, val: T) -> bool;
     fn impl_name(&self) -> &'static str {
         std::any::type_name::<Self>()
     }
@@ -24,7 +27,7 @@ pub struct List<T> {
 
 impl<T> List<T>
 where
-    T: Clone + Copy + Default,
+    T: Clone + Copy + Default + std::cmp::PartialEq,
 {
     pub fn lifo() -> Box<Lifo<T>> {
         Box::new(Lifo { l: List::default() })
@@ -66,6 +69,65 @@ where
             })
             .get_value()
     }
+
+    pub fn contains(&self, val: T) -> bool {
+        let target = Node::new(val);
+        let mut node = self.head();
+        loop {
+            if node.is_nil() {
+                return false;
+            };
+
+            if node.get_value() == target.get_value() {
+                return true;
+            };
+
+            let next = node.next();
+            if next.is_none() {
+                return false;
+            };
+
+            let next = next.unwrap().borrow().clone();
+            node = next;
+        }
+    }
+
+    pub fn remove(&self, val: T) -> bool {
+        let target = Node::new(val);
+        let mut node = self.head();
+
+        if node.is_nil() {
+            return false;
+        };
+        if node.get_value() == target.get_value() {
+            self.first.replace(match node.next() {
+                None => Node::nil(),
+                Some(next) => next.borrow().clone(),
+            });
+            return true;
+        };
+
+        loop {
+            let prev = node.clone();
+
+            let nn = node.next();
+            if nn.is_none() {
+                return false;
+            };
+
+            let nn = nn.unwrap().borrow().clone();
+            node = nn;
+
+            if node.get_value() == target.get_value() {
+                let hop = match node.next() {
+                    None => Node::nil(),
+                    Some(next_ref) => next_ref.borrow().clone(),
+                };
+                prev.set_next(hop);
+                return true;
+            };
+        }
+    }
 }
 
 // last in - first out list
@@ -75,7 +137,7 @@ pub struct Lifo<T> {
 
 impl<T> Methods<T> for Lifo<T>
 where
-    T: Clone + Copy + Default,
+    T: Clone + Copy + Default + std::cmp::PartialEq,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -88,6 +150,14 @@ where
     fn pop(&self) -> Option<T> {
         // pop from the beggining
         self.l.pop()
+    }
+
+    fn contains(&self, val: T) -> bool {
+        self.l.contains(val)
+    }
+
+    fn remove(&self, val: T) -> bool {
+        self.l.remove(val)
     }
 
     fn push(&self, val: T) {
@@ -108,7 +178,7 @@ pub struct Fifo<T> {
 
 impl<T> Methods<T> for Fifo<T>
 where
-    T: Clone + Copy + Default,
+    T: Clone + Copy + Default + std::cmp::PartialEq,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -121,6 +191,14 @@ where
     fn pop(&self) -> Option<T> {
         // pop from the beggining
         self.l.pop()
+    }
+
+    fn contains(&self, val: T) -> bool {
+        self.l.contains(val)
+    }
+
+    fn remove(&self, val: T) -> bool {
+        self.l.remove(val)
     }
 
     fn push(&self, val: T) {
@@ -170,6 +248,14 @@ where
 
     fn pop(&self) -> Option<T> {
         self.l.pop()
+    }
+
+    fn contains(&self, val: T) -> bool {
+        self.l.contains(val)
+    }
+
+    fn remove(&self, val: T) -> bool {
+        self.l.remove(val)
     }
 
     fn push(&self, val: T) {
