@@ -6,38 +6,36 @@ use super::Node;
 
 pub trait Methods<T>
 where
-    T: Display + Clone + Copy,
+    T: Clone + Copy + Default,
 {
     fn size(&self) -> u8;
     fn push(&self, val: T);
     fn pop(&self) -> Option<T>;
     fn head(&self) -> Rc<Node<T>>;
+    fn impl_name(&self) -> &'static str {
+        std::any::type_name::<Self>()
+    }
 }
 
+#[derive(Default)]
 pub struct List<T> {
     first: RefCell<Rc<Node<T>>>,
 }
 
 impl<T> List<T>
 where
-    T: Clone + Copy,
+    T: Clone + Copy + Default,
 {
-    fn new() -> List<T> {
-        List {
-            first: RefCell::new(Node::nil()),
-        }
+    pub fn lifo() -> Box<Lifo<T>> {
+        Box::new(Lifo { l: List::default() })
     }
 
-    pub fn lifo() -> Lifo<T> {
-        Lifo { l: List::new() }
+    pub fn fifo() -> Box<Fifo<T>> {
+        Box::new(Fifo { l: List::default() })
     }
 
-    pub fn fifo() -> Fifo<T> {
-        Fifo { l: List::new() }
-    }
-
-    pub fn ordered() -> Ordered<T> {
-        Ordered { l: List::new() }
+    pub fn ordered() -> Box<Ordered<T>> {
+        Box::new(Ordered { l: List::default() })
     }
 
     pub fn size(&self) -> u8 {
@@ -78,7 +76,7 @@ pub struct Lifo<T> {
 
 impl<T> Methods<T> for Lifo<T>
 where
-    T: Display + Clone + Copy,
+    T: Clone + Copy + Default,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -114,7 +112,7 @@ pub struct Fifo<T> {
 
 impl<T> Methods<T> for Fifo<T>
 where
-    T: Display + Clone + Copy,
+    T: Clone + Copy + Default,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -138,13 +136,23 @@ where
 
         let mut n = self.l.first.borrow_mut().clone();
         loop {
-            if n.next().is_none() {
+            let next = n.next();
+            if next.is_none() {
                 n.set_next(Node::new(val));
                 break;
             };
-            let nn = n.next().unwrap().borrow().clone();
+            let nn = next.unwrap().borrow().clone();
             n = nn;
         }
+    }
+}
+
+impl<T> Display for dyn Methods<T>
+where
+    T: Clone + Copy + Default + Display + 'static,
+{
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        fmt.write_fmt(format_args!("{} {}", self.impl_name(), self.head()))
     }
 }
 
@@ -154,7 +162,7 @@ pub struct Ordered<T> {
 
 impl<T> Methods<T> for Ordered<T>
 where
-    T: Display + Clone + Copy + PartialOrd,
+    T: Clone + Copy + Default + PartialOrd,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -213,7 +221,7 @@ impl<T> ListIterator<T> {
 
 impl<T> Iterator for ListIterator<T>
 where
-    T: std::cmp::PartialEq + Clone + Copy,
+    T: Clone + Copy + Default + std::cmp::PartialEq,
 {
     type Item = T;
 
@@ -231,7 +239,7 @@ where
 
 impl<T> IntoIterator for Lifo<T>
 where
-    T: std::cmp::PartialEq + Clone + Copy,
+    T: Clone + Copy + Default + std::cmp::PartialEq,
 {
     type Item = T;
     type IntoIter = ListIterator<T>;
