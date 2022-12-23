@@ -40,14 +40,13 @@ where
 
     pub fn size(&self) -> u8 {
         let mut count = 0;
-        let mut current = self.head();
+        let mut node = self.head();
         loop {
-            if let Node::Nil = *current {
+            if node.is_nil() {
                 return count;
             };
             count += 1;
-
-            current = match current.next() {
+            node = match node.next() {
                 Some(next) => next.borrow().clone(),
                 None => Node::nil(),
             };
@@ -93,15 +92,12 @@ where
 
     fn push(&self, val: T) {
         // append on the beggining
+        let new = Node::new(val);
         let head = self.head();
-        self.l.first.replace(match *head {
-            Node::Nil => Node::new(val),
-            _ => {
-                let elem = Node::new(val);
-                elem.set_next(head);
-                elem
-            }
-        });
+        if !head.is_nil() {
+            new.set_next(head);
+        };
+        self.l.first.replace(new);
     }
 }
 
@@ -129,7 +125,7 @@ where
 
     fn push(&self, val: T) {
         // append in the end
-        if let Node::Nil = *self.head() {
+        if self.head().is_nil() {
             self.l.first.replace(Node::new(val));
             return;
         };
@@ -178,30 +174,30 @@ where
 
     fn push(&self, val: T) {
         let new = Node::new(val);
-        let mut current = self.head();
+        let mut node = self.head();
 
-        if let Node::Nil = *current {
+        if node.is_nil() {
             self.l.first.replace(new);
             return;
-        } else if new <= current {
+        } else if new <= node {
             new.set_next(self.head());
             self.l.first.replace(new);
             return;
         };
 
         loop {
-            match current.next() {
+            match node.next() {
                 Some(next_ref) => {
                     let next = next_ref.borrow().clone();
-                    if new > current && new <= next {
+                    if node < new && new <= next {
                         new.set_next(next);
-                        current.set_next(new.clone());
+                        node.set_next(new);
                         return;
                     };
-                    current = next;
+                    node = next;
                 }
                 None => {
-                    current.set_next(new.clone());
+                    node.set_next(new);
                     return;
                 }
             }

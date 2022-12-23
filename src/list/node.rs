@@ -42,6 +42,13 @@ where
         Rc::new(Node::default())
     }
 
+    pub fn is_nil(&self) -> bool {
+        match self {
+            Node::Nil => true,
+            _ => false,
+        }
+    }
+
     pub fn next(&self) -> Option<&RefCell<Rc<Node<T>>>> {
         match self {
             Node::Content { value: _, next } => {
