@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::rc::Rc;
@@ -21,13 +20,13 @@ where
 }
 
 #[derive(Default)]
-pub struct List<T> {
+pub struct List<T: Clone + Copy> {
     first: RefCell<Rc<Node<T>>>,
 }
 
 impl<T> List<T>
 where
-    T: Clone + Copy + Default + std::cmp::PartialEq,
+    T: Clone + Copy + Default + PartialEq + PartialOrd,
 {
     pub fn lifo() -> Box<Lifo<T>> {
         Box::new(Lifo { l: List::default() })
@@ -78,7 +77,7 @@ where
                 return false;
             };
 
-            if node.get_value() == target.get_value() {
+            if node == target {
                 return true;
             };
 
@@ -99,7 +98,7 @@ where
         if node.is_nil() {
             return false;
         };
-        if node.get_value() == target.get_value() {
+        if node == target {
             self.first.replace(match node.next() {
                 None => Node::nil(),
                 Some(next) => next.borrow().clone(),
@@ -131,13 +130,13 @@ where
 }
 
 // last in - first out list
-pub struct Lifo<T> {
+pub struct Lifo<T: Clone + Copy> {
     l: List<T>,
 }
 
 impl<T> Methods<T> for Lifo<T>
 where
-    T: Clone + Copy + Default + std::cmp::PartialEq,
+    T: Clone + Copy + Default + PartialEq + PartialOrd,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -172,13 +171,13 @@ where
 }
 
 // first in - first out list
-pub struct Fifo<T> {
+pub struct Fifo<T: Clone + Copy> {
     l: List<T>,
 }
 
 impl<T> Methods<T> for Fifo<T>
 where
-    T: Clone + Copy + Default + std::cmp::PartialEq,
+    T: Clone + Copy + Default + PartialEq + PartialOrd,
 {
     fn size(&self) -> u8 {
         self.l.size()
@@ -230,7 +229,7 @@ where
     }
 }
 
-pub struct Ordered<T> {
+pub struct Ordered<T: Clone + Copy> {
     l: List<T>,
 }
 
@@ -291,11 +290,14 @@ where
     }
 }
 
-pub struct ListIterator<T> {
+pub struct ListIterator<T: Clone + Copy> {
     current: Rc<Node<T>>,
 }
 
-impl<T> ListIterator<T> {
+impl<T> ListIterator<T>
+where
+    T: Clone + Copy,
+{
     pub fn new(current: Rc<Node<T>>) -> Self {
         ListIterator { current }
     }

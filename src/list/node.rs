@@ -3,28 +3,14 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::rc::Rc;
 
-#[derive(Debug, Default, PartialEq, PartialOrd)]
-pub enum Node<T> {
+#[derive(Debug, Default, PartialOrd)]
+pub enum Node<T: Clone + Copy> {
     #[default]
     Nil,
     Content {
         value: T,
         next: RefCell<Rc<Node<T>>>,
     },
-}
-
-impl<T> Display for Node<T>
-where
-    T: Display,
-{
-    fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        match self {
-            Node::Nil => fmt.write_str("nil"),
-            Node::Content { value, next } => {
-                fmt.write_fmt(format_args!("[ {} -> {}]", value, next.borrow()))
-            }
-        }
-    }
 }
 
 impl<T> Node<T>
@@ -53,9 +39,9 @@ where
         match self {
             Node::Content { value: _, next } => {
                 let node = next.borrow();
-                match node.get_value() {
-                    Some(_) => Some(next),
-                    None => None,
+                match node.is_nil() {
+                    false => Some(next),
+                    true => None,
                 }
             }
             Node::Nil => None,
@@ -74,6 +60,29 @@ where
         match self {
             Node::Content { value, next: _ } => Some(*value),
             Node::Nil => None,
+        }
+    }
+}
+
+impl<T> PartialEq for Node<T>
+where
+    T: Clone + Copy + PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.get_value() == other.get_value()
+    }
+}
+
+impl<T> Display for Node<T>
+where
+    T: Clone + Copy + Display,
+{
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Node::Nil => fmt.write_str("nil"),
+            Node::Content { value, next } => {
+                fmt.write_fmt(format_args!("[ {} -> {}]", value, next.borrow()))
+            }
         }
     }
 }
