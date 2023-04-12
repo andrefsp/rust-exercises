@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package queue;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+
+message Node {
+  google.protobuf.Any value = 1;
+}
+
+message List {
+  string id = 1;
+}
+
+message PushRequest {
+  string listID = 1;
+	Node node = 2;
+};
+
+message PopRequest {
+  string listID = 1;
+};
+
+service Queue {
+   rpc Create(google.protobuf.Empty) returns (List);
+	 rpc Push(PushRequest) returns (google.protobuf.Empty);
+	 rpc Pop(PopRequest) returns (Node);
+}
